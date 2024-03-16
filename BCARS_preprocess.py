@@ -29,7 +29,7 @@ mpl.rcParams.update(mpl.rcParamsDefault)
 #
 
 # Import h5 file
-f = h5py.File(r"C:\Users\19719431\OneDrive - Maynooth University\Desktop\BCARS\h5files\12-Mar-2024_1648_23.847.h5", 'r')
+f = h5py.File(r"C:\Users\19719431\OneDrive - Maynooth University\Desktop\BCARS\h5files\13-Mar-2024_1839_10.047.h5", 'r')
 
 # extract hyperspectral image data
 df= f['Image'][:]
@@ -41,7 +41,7 @@ spec_len = 1024
 
 df = np.asarray(df) 
 
-df = df[0:150, 0:150, :]
+# df = df[0:150, 0:150, :]
 
 # Rotate image as we record sideways
 df = np.rot90(np.flip(df,2))
@@ -61,19 +61,21 @@ plt.show()
 
 #%%
 
+newdf = np.reshape(df, (400 * 400, 1024))
+
 from sklearn.decomposition import PCA
 pca_out = PCA(n_components=2)
-pca_covariance = pca_out.fit_transform(newcropped)
+pca_covariance = pca_out.fit_transform(newdf)
 # print(dir(pca))
-pca_img = np.reshape(pca_covariance, (150, 150, 2))
+pca_img = np.reshape(pca_covariance, (400, 400, 2))
 plt.imshow(pca_img[:,:,1])
 plt.show()
 
 #%% Singular Value Decomposition - Economy SVD
 
 # We calculate the image mean and standard deviation in a background region - required for SVD reconstruction
-mean = np.mean(np.mean(np.mean(df[0:50,0:50,450:500],2),0),0)
-std = np.mean(np.mean(np.std(df[0:50,0:50,450:500],2),0),0) 
+mean = np.mean(np.mean(np.mean(df[350:400,0:50,450:500],2),0),0)
+std = np.mean(np.mean(np.std(df[350:400,0:50,450:500],2),0),0) 
 
 # df_ans = Anscombe transformed data for removing heteroscedasticity
 df_ans = np.zeros((side_len1,side_len2,1024))
@@ -138,8 +140,8 @@ for i in range(np.size(df,0)):
         inv_ans = inverse_generalized_anscombe(df_ans[i,k,:],mu=mean, sigma=std)     
         df_denoised[i,k,:] = inv_ans
 #%% This is for checking the quality of denoising - set x and y to a signal pixel based off the image
-x = 137
-y = 80
+x = 50
+y = 50
 
 plt.plot(df[x,y,:],label = 'before SVD',c = 'k',linewidth = 1)
 plt.plot(df_denoised[x,y,:]+100,label = 'After SVD',c = 'r',linewidth = 1)
@@ -159,8 +161,8 @@ wl=wl[10:right_cutoff]
 wn = 1e7*(1/wl-1/770.9)
 
 # Setting NRB as an average of a 'background' pixel area
-nrb_x = 20
-nrb_y = 60
+nrb_x = 375
+nrb_y = 25
 
 nrb = (np.mean(np.mean(df_denoised[nrb_x :nrb_x +5,nrb_y:nrb_y+5 ,:],0),0))
 
@@ -243,10 +245,11 @@ plt.savefig('retrieved.png',dpi=600)
 
 #%% This is for choosing the wavelengths to color
 x, y = 128, 11
-plt.plot(result[50, 29,:],label = 'signal',linewidth = 1)
-plt.plot(result[104, 44,:],label = 'signal',linewidth = 1)
-plt.plot(result[92, 33,:],label = 'signal',linewidth = 1)
-#plt.plot(result[20,20,:],label = 'glass',linewidth = 1)
+plt.plot(result[103, 188,:],label = 'signal',linewidth = 1)
+plt.plot(result[129, 260,:],label = 'signal',linewidth = 1)
+plt.plot(result[150, 150,:],label = 'glass',linewidth = 1)
+# plt.plot(result[92, 33,:],label = 'signal',linewidth = 1)
+
 plt.legend()
 plt.show()
 # 313, 261
@@ -256,9 +259,9 @@ plt.show()
 from matplotlib.colors import LogNorm
 rgb = np.zeros((side_len1,side_len2,3))
 
-spec_line1 = 898
-spec_line2 = 308
-spec_line3 = 850
+spec_line1 = 840
+spec_line2 = 897
+spec_line3 = 962
 
 loc = result[:,:,338]
 
