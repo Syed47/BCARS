@@ -68,9 +68,19 @@ pca_out = PCA(n_components=2)
 pca_covariance = pca_out.fit_transform(newdf)
 # print(dir(pca))
 pca_img = np.reshape(pca_covariance, (400, 400, 2))
-plt.imshow(pca_img[:,:,1])
+# plt.imshow(pca_img[:,:,0])
+plt.imshow(pca_img[:,:,0])
 plt.show()
 
+
+#%%
+plt.plot(df[203, 232,:],label = 'PMMA',linewidth = 1)
+# plt.plot(result[129, 260,:],label = 'signal',linewidth = 1)
+plt.plot(df[387, 235,:],label = 'PS',linewidth = 1)
+# plt.plot(result[5, 382,:],label = 'signal',linewidth = 1)
+# plt.plot(result[150, 150,:],label = 'glass',linewidth = 1)
+plt.legend()
+plt.show()
 #%% Singular Value Decomposition - Economy SVD
 
 # We calculate the image mean and standard deviation in a background region - required for SVD reconstruction
@@ -140,13 +150,22 @@ for i in range(np.size(df,0)):
         inv_ans = inverse_generalized_anscombe(df_ans[i,k,:],mu=mean, sigma=std)     
         df_denoised[i,k,:] = inv_ans
 #%% This is for checking the quality of denoising - set x and y to a signal pixel based off the image
-x = 50
-y = 50
+x = 390
+y = 235
 
 plt.plot(df[x,y,:],label = 'before SVD',c = 'k',linewidth = 1)
 plt.plot(df_denoised[x,y,:]+100,label = 'After SVD',c = 'r',linewidth = 1)
 plt.legend()
 plt.show()
+
+
+# x = 94
+# y = 220
+
+# plt.plot(df[x,y,:],label = 'before SVD',c = 'k',linewidth = 1)
+# plt.plot(df_denoised[x,y,:]+100,label = 'After SVD',c = 'g',linewidth = 1)
+# plt.legend()
+# plt.show()
 
 #%% This is for optimizing the Kramers-Kronig NRB removal, we first perform it on a single spectrum and evaluate results
 
@@ -244,12 +263,18 @@ bax1.legend(loc=2)
 plt.savefig('retrieved.png',dpi=600)
 
 #%% This is for choosing the wavelengths to color
-x, y = 128, 11
-plt.plot(result[103, 188,:],label = 'signal',linewidth = 1)
-plt.plot(result[129, 260,:],label = 'signal',linewidth = 1)
-plt.plot(result[150, 150,:],label = 'glass',linewidth = 1)
-# plt.plot(result[92, 33,:],label = 'signal',linewidth = 1)
 
+# x = 390
+# y = 235
+
+# x = 94
+# y = 220
+
+plt.plot(result[203, 232,:],label = 'PMMA',linewidth = 1)
+# plt.plot(result[129, 260,:],label = 'signal',linewidth = 1)
+plt.plot(result[387, 235,:],label = 'PS',linewidth = 1)
+# plt.plot(result[5, 382,:],label = 'signal',linewidth = 1)
+# plt.plot(result[150, 150,:],label = 'glass',linewidth = 1)
 plt.legend()
 plt.show()
 # 313, 261
@@ -260,40 +285,39 @@ from matplotlib.colors import LogNorm
 rgb = np.zeros((side_len1,side_len2,3))
 
 spec_line1 = 840
-spec_line2 = 897
+spec_line2 = 331#897
 spec_line3 = 962
 
 loc = result[:,:,338]
 
 loc = loc > 0.00
 
-cropped = result*loc[:,:,np.newaxis]
+# cropped = result*loc[:,:,np.newaxis]
 
 t1 = time.perf_counter()
 
 for i in range(result.shape[0]):
   for j in range(result.shape[1]):
-    rgb[i,j,0] = 1*cropped[i,j,spec_line1]/(cropped[:,:,spec_line1].max()).max() if cropped[i,j,spec_line1] > 0.00 else 0 # R
-    rgb[i,j,1] = 1*cropped[i,j,spec_line2]/(cropped[:,:,spec_line2].max()).max() if cropped[i,j,spec_line2] > 0.0026 else 0 # R
-    rgb[i,j,2] = 0*cropped[i,j,spec_line3]/(cropped[:,:,spec_line3].max()).max() if cropped[i,j,spec_line3] > 0.00 else 0 # R
+    rgb[i,j,0] = 1*cropped[i,j,spec_line1]/(cropped[:,:,spec_line1].max()) if cropped[i,j,spec_line1] > 0.00 else 0 # R
+    rgb[i,j,1] = 1*cropped[i,j,spec_line2]/(cropped[:,:,spec_line2].max()) if cropped[i,j,spec_line2] > 0.0026 else 0 # R
+    # rgb[i,j,2] = 0*cropped[i,j,spec_line3]/(cropped[:,:,spec_line3].max()).max() if cropped[i,j,spec_line3] > 0.00 else 0 # R
 
 fig,ax = plt.subplots(1,1)
+ax.scatter([-3], [-3], color="red", label="PS")
+ax.scatter([-3], [-3], color="green", label="PMMA")
 ax.imshow(rgb)
+ax.legend(loc="upper right")
 plt.show()
 #%%
-
-newcropped = np.reshape(cropped, (150 * 150, 1000))
+print(cropped.shape)
+newcropped = np.reshape(cropped, (400 * 400, 1000))
 
 from sklearn.decomposition import PCA
 pca_out = PCA(n_components=2)
 pca_covariance = pca_out.fit_transform(newcropped)
-# print(dir(pca))
-pca_img = np.reshape(pca_covariance, (150, 150, 2))
-plt.imshow(pca_img[:,:,1])
+pca_img = np.reshape(pca_covariance, (400, 400, 2))
+plt.imshow(pca_img[:,:,0])
 plt.show()
-
-# method
-#  data 1 half
 #%%
 cropped.shape
 
